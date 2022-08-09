@@ -1,0 +1,11 @@
+{
+  "name": "IMGS-DOWN",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Awakich/Imgs-downloader",
+  "author": "Artem",
+  "license": "MIT",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.5"
+  }
+}
