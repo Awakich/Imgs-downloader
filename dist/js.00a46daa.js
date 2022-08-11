@@ -237,21 +237,26 @@ function upload(selector) {
     }, 300);
   };
 
+  var clearPreview = function clearPreview(element) {
+    element.style.bottom = '0px';
+    element.innerHTML = '<div class="preview-info-progress"></div>';
+  };
+
   var downloadHandler = function downloadHandler() {
     preview.querySelectorAll('.preview-remove').forEach(function (element) {
       return element.remove();
     });
+    var previewInfo = preview.querySelectorAll('.preview-info');
+    previewInfo.forEach(clearPreview);
     onUpload(files);
   };
 
   button.addEventListener('click', function () {
     return input.click();
   });
-  download.addEventListener('click', function () {
-    return downloadHandler;
-  });
   input.addEventListener('change', handler);
   preview.addEventListener('click', removeHandler);
+  download.addEventListener('click', downloadHandler);
 }
 },{}],"js/index.js":[function(require,module,exports) {
 "use strict";
@@ -261,7 +266,7 @@ var _upload = require("./upload.js");
 (0, _upload.upload)('#file', {
   multi: true,
   accept: ['.png', '.jpg', '.jpeg', ',gif'],
-  inUpload: function inUpload(files) {}
+  onUpload: function onUpload(files) {}
 });
 },{"./upload.js":"js/upload.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -291,7 +296,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65456" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57449" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

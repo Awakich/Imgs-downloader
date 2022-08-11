@@ -154,3 +154,13 @@ img{
     padding: 8px 0px;
     transition: bottom 0.2s;
 }
+
+.preview-info-progress{
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    top: 0;
+    background: #000;
+    text-align: center;
+    transition: width 0.2s;
+}

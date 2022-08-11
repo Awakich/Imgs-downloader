@@ -96,13 +96,20 @@ export function upload(selector, options = {}){
         }, 300)
     }
 
+    const clearPreview = element => {
+        element.style.bottom = '0px'
+        element.innerHTML = '<div class="preview-info-progress"></div>'
+    }
+
     const downloadHandler = () => {
         preview.querySelectorAll('.preview-remove').forEach(element => element.remove())
+        const previewInfo = preview.querySelectorAll('.preview-info')
+        previewInfo.forEach(clearPreview) 
         onUpload(files)
     }
 
     button.addEventListener('click', () => input.click())
-    download.addEventListener('click', () => downloadHandler)
     input.addEventListener('change', handler)
     preview.addEventListener('click', removeHandler)
+    download.addEventListener('click', downloadHandler)
 }
