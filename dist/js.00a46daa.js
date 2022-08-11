@@ -125,13 +125,60 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.upload = upload;
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function bytesToSize(bytes) {
+  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+
+  if (!bytes) {
+    return '0 Byte';
+  }
+
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
+}
+
+var element = function element(tag) {
+  var classes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+  var content = arguments.length > 2 ? arguments[2] : undefined;
+  var node = document.createElement(tag);
+
+  if (classes.length) {
+    var _node$classList;
+
+    (_node$classList = node.classList).add.apply(_node$classList, _toConsumableArray(classes));
+  }
+
+  if (content) {
+    node.textContent = content;
+  }
+
+  return node;
+};
+
+function noop() {}
+
 function upload(selector) {
+  var _options$onUpload;
+
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var files = [];
+  var upload = (_options$onUpload = options.onUpload()) !== null && _options$onUpload !== void 0 ? _options$onUpload : noop();
   var input = document.querySelector(selector);
-  var button = document.createElement('button');
-  button.classList.add('btn');
-  button.classList.add('primary');
-  button.textContent = 'upload';
+  var preview = element('div', ['preview']);
+  var button = element('button', ['btn', 'primary'], 'upload');
+  var download = element('button', ['btn'], 'download');
+  download.style.display = 'none';
 
   if (options.multi) {
     input.setAttribute('multiple', true);
@@ -141,14 +188,18 @@ function upload(selector) {
     input.setAttribute('accept', options.accept.join(','));
   }
 
+  input.insertAdjacentElement('afterend', preview);
   input.insertAdjacentElement('afterend', button);
+  input.insertAdjacentElement('afterend', download);
 
   var handler = function handler(event) {
     if (!event.target.files.length) {
       return;
     }
 
-    var files = Array.from(event.target.files);
+    files = Array.from(event.target.files);
+    preview.innerHTML = '';
+    download.style.display = 'inline';
     files.forEach(function (file) {
       if (!file.type.match('image')) {
         return;
@@ -157,18 +208,50 @@ function upload(selector) {
       var reader = new FileReader();
 
       reader.onload = function (event) {
-        console.log(event.target.result);
-        input.insertAdjacentHTML('afterend', "<img src=\"".concat(event.target.result, "\" />"));
+        var src = event.target.result;
+        preview.insertAdjacentHTML('afterbegin', "\n                <div class=\"preview-image\">\n                <div class=\"preview-remove\" data-name=\"".concat(file.name, "\">&times;</div>\n                    <img src=\"").concat(src, "\" alt=\"").concat(file.name, "\"/>\n                <div class=\"preview-info\">\n                    <span>").concat(file.name, "</span>\n                    ").concat(bytesToSize(file.size), "\n                </div>\n                </div>"));
       };
 
       reader.readAsDataURL(file);
     });
   };
 
+  var removeHandler = function removeHandler(event) {
+    if (!event.target.dataset.name) {
+      return;
+    }
+
+    var name = event.target.dataset.name;
+    files = files.filter(function (file) {
+      return file.name !== name;
+    });
+
+    if (!file.length) {
+      download.style.display = 'none';
+    }
+
+    var block = preview.querySelector("[data-name=\"".concat(name, "\"]")).closest('.preview-image');
+    block.classList.add('removing');
+    setTimeout(function () {
+      block.remove();
+    }, 300);
+  };
+
+  var downloadHandler = function downloadHandler() {
+    preview.querySelectorAll('.preview-remove').forEach(function (element) {
+      return element.remove();
+    });
+    onUpload(files);
+  };
+
   button.addEventListener('click', function () {
     return input.click();
   });
+  download.addEventListener('click', function () {
+    return downloadHandler;
+  });
   input.addEventListener('change', handler);
+  preview.addEventListener('click', removeHandler);
 }
 },{}],"js/index.js":[function(require,module,exports) {
 "use strict";
@@ -177,7 +260,8 @@ var _upload = require("./upload.js");
 
 (0, _upload.upload)('#file', {
   multi: true,
-  accept: ['.png', '.jpg', '.jpeg', ',gif']
+  accept: ['.png', '.jpg', '.jpeg', ',gif'],
+  inUpload: function inUpload(files) {}
 });
 },{"./upload.js":"js/upload.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -207,7 +291,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58953" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65456" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
